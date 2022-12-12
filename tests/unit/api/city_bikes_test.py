@@ -6,6 +6,11 @@ from mock import MagicMock, patch
 
 import api
 
+BASE_URL = "http://api.citybik.es/v2/networks"
+EXPECTED_NETWORKS_URL = f"{BASE_URL}?fields=id,location.country"
+EXPECTED_BY_ID = "foobar"
+EXPECTED_NETWORK_URL = f"{BASE_URL}/{EXPECTED_BY_ID}"
+
 
 class MockResponse:
 
@@ -67,6 +72,26 @@ class TestCityBikes:
                 "status_code": 200
             }
         }
+
+    @patch("requests.get", return_value=MockResponse(
+        status=200,
+        content=None
+    ))
+    def test_networks_endpoint_validate_requested_url(self,
+                                                      get_patch: MagicMock):
+        self.api.networks()
+        assert "url" in list(get_patch.call_args.kwargs.keys())
+        assert EXPECTED_NETWORKS_URL == get_patch.call_args.kwargs["url"]
+
+    @patch("requests.get", return_value=MockResponse(
+        status=200,
+        content=None
+    ))
+    def test_network_endpoint_validate_requested_url(self,
+                                                      get_patch: MagicMock):
+        self.api.network(by_id=EXPECTED_BY_ID)
+        assert "url" in list(get_patch.call_args.kwargs.keys())
+        assert EXPECTED_NETWORK_URL == get_patch.call_args.kwargs["url"]
 
     @patch("requests.get", return_value=MockResponse(
         status=400,
